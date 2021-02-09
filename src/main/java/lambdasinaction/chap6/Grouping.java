@@ -2,6 +2,7 @@ package lambdasinaction.chap6;
 
 import java.util.*;
 
+import static java.util.Comparator.*;
 import static java.util.stream.Collectors.*;
 import static lambdasinaction.chap6.Dish.dishTags;
 import static lambdasinaction.chap6.Dish.menu;
@@ -22,6 +23,20 @@ public class Grouping {
         System.out.println("Most caloric dishes by type: " + mostCaloricDishesByTypeWithoutOprionals());
         System.out.println("Sum calories by type: " + sumCaloriesByType());
         System.out.println("Caloric levels by type: " + caloricLevelsByType());
+
+        //책에 없는 예제
+        System.out.println("======================================");
+        System.out.println("mostCaloricByType: " + mostCaloricByType());
+        System.out.println("======================================");
+        Map<Dish.Type, HashSet<CaloricLevel>> caloricLevelByType = menu.stream().collect(groupingBy(Dish::getType, mapping(dish -> {
+            if (dish.getCalories() <= 400) {
+                return CaloricLevel.DIET;
+            } else if (dish.getCalories() <= 700) {
+                return CaloricLevel.NORMAL;
+            } else {
+                return CaloricLevel.FAT;
+            }
+        }, toCollection(HashSet::new))));
     }
 
     private static Map<Dish.Type, List<Dish>> groupDishesByType() {
@@ -66,6 +81,11 @@ public class Grouping {
         return menu.stream().collect(groupingBy(Dish::getType, counting()));
     }
 
+    //요리의 종류를 분류하는 컬렉터로 메뉴에서 가장 높은 칼로리르 가진 요리를 찾는 프로그램도 다시 구현할 수 있다.
+    private static Map<Dish.Type, Optional<Dish>> mostCaloricByType() {
+        return menu.stream().collect(groupingBy(Dish::getType, maxBy(comparingInt(Dish::getCalories))));
+    }
+
     private static Map<Dish.Type, Optional<Dish>> mostCaloricDishesByType() {
         return menu.stream().collect(
                 groupingBy(Dish::getType,
@@ -93,4 +113,5 @@ public class Grouping {
                         else return CaloricLevel.FAT; },
                         toSet() )));
     }
+
 }
